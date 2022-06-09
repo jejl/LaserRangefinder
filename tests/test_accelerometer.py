@@ -2,7 +2,7 @@
 #Driver for the LSM303D accelerometer and magnetometer/compass
 
 #First follow the procedure to enable I2C on R-Pi.
-#1. Add the lines "ic2-bcm2708" and "i2c-dev" to the file /etc/modules
+#1. Add the lines "i2c-bcm2708" and "i2c-dev" to the file /etc/modules
 #2. Comment out the line "blacklist ic2-bcm2708" (with a #) in the file /etc/modprobe.d/raspi-blacklist.conf
 #3. Install I2C utility (including smbus) with the command "apt-get install python-smbus i2c-tools"
 #4. Connect the I2C device and detect it using the command "i2cdetect -y 1".  It should show up as 1D or 1E (here the variable LSM is set to 1D).
