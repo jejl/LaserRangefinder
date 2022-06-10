@@ -1,4 +1,4 @@
-"""Logging configuration for Fesh3"""
+"""Logging configuration for LaserRangefinder"""
 import logging
 import logging.config
 import logging.handlers
@@ -6,11 +6,11 @@ import logging.handlers
 logger = logging.getLogger(__name__)
 
 
-class FeshLog:
+class LaserLog:
     def __init__(
-        self, log_dir: str, log_filename: str, quiet: bool = False, level=logging.INFO
+        self, log_dir: str, log_filename: str, level=logging.INFO
     ):
-        """Setup logging parameters for Fesh3
+        """Setup logging parameters
 
         Parameters
         ----------
@@ -18,8 +18,6 @@ class FeshLog:
             Directory to put the log file
         log_filename
             Name of the log file in log_filename
-        quiet
-            If no log information is wanted for STDOUT, set this to True
         level
             logging level
         """
@@ -95,7 +93,7 @@ class FeshLog:
                 },
             },
             "loggers": {
-                "fesh3": {  # The name of the logger, this SHOULD match your module!
+                "LaserRangefinder": {  # The name of the logger, this SHOULD match your module!
                     "level": level,
                     "handlers": [
                         "verbose_output",  # Refer the handler defined above
@@ -112,10 +110,6 @@ class FeshLog:
             },
         }
 
-        # no messages to the screen if in quiet mode unless its critical or worse
-        if quiet:
-            # LOGGING_CONFIG["loggers"] = {}
-            LOGGING_CONFIG["handlers"]["verbose_output"]["level"] = logging.CRITICAL
         logging.config.dictConfig(LOGGING_CONFIG)
 
         logger.info("Writing to log file {}.".format(log_file_str))

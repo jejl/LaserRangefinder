@@ -2,7 +2,7 @@
 
 import time
 import RPi.GPIO as GPIO
-from encoder import Encoder
+from util.encoder import Encoder
 
 def valueChanged(value, direction):
     print("* New value: {}, Direction: {}".format(value, direction))

@@ -19,7 +19,7 @@ while True:
     xyz = lsm.accelerometer()
     xyz2 = lsm.magnetometer()
 
-    heading = (180 * np.arctan2(xyz2[1], xyz[0]) / np.pi) % 360
+    heading = (180 * np.arctan2(xyz2[1], xyz2[0]) / np.pi) % 360
 
     print(("{:+06.2f} : {:+06.2f} : {:+06.2f} , heading = {:7.4f}").format(*xyz2, heading))
     print(("{:+06.2f}g : {:+06.2f}g : {:+06.2f}g").format(*xyz))

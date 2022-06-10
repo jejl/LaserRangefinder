@@ -111,6 +111,7 @@ class ST7789(object):
 
         self.command(0x21) 
 
+        # Display On
         self.command(0x29)
 
     def reset(self):
@@ -163,3 +164,11 @@ class ST7789(object):
         GPIO.output(self._dc,GPIO.HIGH)
         for i in range(0,len(_buffer),4096):
             self._spi.writebytes(_buffer[i:i+4096])		
+
+    def DisplayOn(self):
+        # Display On
+        self.command(0x29)
+
+    def DisplayOff(self):
+        # Display Off
+        self.command(0x28)

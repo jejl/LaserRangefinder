@@ -1,3 +1,4 @@
+"""Based on example code from Supplier"""
 import smbus
 import time
 

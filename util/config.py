@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Manage Fesh3 configuration
+"""Manage LaserRangefinder configuration
 
-This code manages configuration parameters for Fesh3, obtained from the command line, environment
-variables and config files. Fesh3 will take its configuration in the following priority order
+This code manages configuration parameters for LaserRangefinder, obtained from the command line, environment
+variables and config files. LaserRangefinder will take its configuration in the following priority order
 from lowest to highest:
 
 * Two config files, in this order:
     * `/usr2/control/skedf.ctl`
-    * `/usr2/control/fesh3.config`
+    * `/usr2/control/LaserRangefinder.config`
 * Environment variables
 * Command-line parameters
 """
@@ -65,7 +65,7 @@ class Config:
         # parameters found in LaserRangefinder.config:
         self.LogDir = "/home/jlovell/Logs"
         # I2C address of the accelerometer
-        self.accel_addr = "0x1D"
+        self.accel_addr = 0x1D
         # GPS parameters
         self.GPS_port = "/dev/ttyS0"
         self.GPS_baudrate = 9600
@@ -188,7 +188,7 @@ class Args:
         # Now process the arguments for real.
 
         # first we want to check the command-line params to see if the locations of the skedf and
-        # fesh3 config files are correct
+        # LaserRangefinder config files are correct
         parser_cfg_file_check = configargparse.ArgParser()
         self.add_skedf_args(
             parser_cfg_file_check, default_config_file_skedf, default_config_file_fesh
@@ -216,10 +216,10 @@ class Args:
         # The schedules directory must be defined. Stop here if it's not
         if not "schedules" in items or not items["schedules"]:
             msg = (
-                "\nFesh3 requires that $schedules is defined in skedf.ctl.\n"
+                "\nLaserRangefinder requires that $schedules is defined in skedf.ctl.\n"
                 "The default of '.' (i.e. the directory the software is\n"
-                "started in) is too arbitrary and could cause fesh3 to\n"
-                "lose track of files. Fesh3 will not execute unless $schedules\n"
+                "started in) is too arbitrary and could cause LaserRangefinder to\n"
+                "lose track of files. LaserRangefinder will not execute unless $schedules\n"
                 "is defined. Exiting.\n"
             )
             raise Exception(msg)
@@ -287,7 +287,7 @@ class Args:
             "--ConfigFile",
             is_config_file=True,
             default=default_config_file_fesh,
-            help="The fesh3 configuration file to use. e.g. /usr2/control/fesh3.config",
+            help="The LaserRangefinder configuration file to use. e.g. /usr2/control/LaserRangefinder.config",
         )
         return parser_cfg_file_check
 
@@ -428,7 +428,7 @@ class Args:
             const=True,
             default=False,
             nargs="?",
-            help="Send notifications by email. The fesh3 config file will be read for details on "
+            help="Send notifications by email. The LaserRangefinder config file will be read for details on "
             "mail server, recipients etc",
         )
 
@@ -575,7 +575,7 @@ class Args:
             "-e",
             "--check",
             action="store_true",
-            help="Check the current fesh3 status. Shows the status of schedule files and when schedule servers were "
+            help="Check the current LaserRangefinder status. Shows the status of schedule files and when schedule servers were "
             "last queried.",
         )
 
@@ -590,7 +590,7 @@ class Args:
             "-q",
             "--quiet",
             action="store_true",
-            help="Runs fesh3 with all terminal output suppressed. Useful when running fesh3 as a service.",
+            help="Runs LaserRangefinder with all terminal output suppressed. Useful when running LaserRangefinder as a service.",
         )
 
         return psr
