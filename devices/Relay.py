@@ -12,3 +12,25 @@ class Relay:
 
     def off(self):
         self.relay.off()
+
+def waitfor(command, timeout):
+    """call shell-command and either return its output or kill it
+    if it doesn't normally exit within timeout seconds and return None"""
+    import subprocess, datetime, os, time, signal
+    start = datetime.datetime.now()
+    process = subprocess.Popen(command, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    while process.poll() is None:
+        time.sleep(0.2)
+        now = datetime.datetime.now()
+        if (now - start).seconds > timeout:
+            os.kill(process.pid, signal.SIGKILL)
+            os.waitpid(-1, os.WNOHANG)
+            return None
+    return process.stdout.readlines()
+
+if __name__ == '__main__':
+  waitfor("""osascript -e 'mount volume "afp://office/photos"'""", 15)
+  waitfor("""osascript -e 'mount volume "smb://guest:guest@meo/shared"'""", 15)
+  sync_last(25, ['/Volumes/photos','/Volumes/shared'])
+  os.popen("""osascript -e 'tell application "Finder" to eject "Hotwired"'""")
+  os.popen("""osascript -e 'tell application "Finder" to eject "Shared"'""")

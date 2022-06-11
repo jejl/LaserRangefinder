@@ -72,3 +72,4 @@ class Accelerometer:
 
         # Calculate heading
         self.norm_heading = np.arctan2(magYcomp, magXcomp) % (2 * np.pi)
+

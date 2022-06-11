@@ -199,6 +199,32 @@ class INA219:
             value -= 65535
         return value * self._power_lsb
 
+class UPS:
+    def __init__(self, config):
+        self.addr = config.UPS_addr
+        self.ina219 = INA219(addr=self.addr)
+        self.load_voltage_V = 0
+        self.shunt_voltage = 0
+        self.current_A = 0
+        self.power_W = 0
+        self.battery_percent = 0
+        self.PSU_voltage = 0
+
+    def get_ups_data(self):
+        self.load_voltage_V = ina219.getBusVoltage_V()  # voltage on V- (load side)
+        self.shunt_voltage = (
+                ina219.getShuntVoltage_mV() / 1000
+        )  # voltage between V+ and V- across the shunt
+        self.current_A = ina219.getCurrent_mA()/1000  # current in mA
+        self.power_W = ina219.getPower_W()  # power in W
+        p = (self.load_voltage_V - 3) / 1.2 * 100
+        if p > 100:
+            p = 100
+        if p < 0:
+            p = 0
+        self.battery_percent = p
+        self.PSU_voltage = self.load_voltage_V - self.shunt_voltage
+
 
 if __name__ == "__main__":
 

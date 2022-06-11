@@ -8,14 +8,54 @@ from _version import __version__
 from devices.ScreenAndButtons import ScreenAndButtons
 from devices.Relay import Relay
 from devices.Rotary import Rotary
-import devices.UPS as UPS
+from devices.Accelerometer import Accelerometer
+from devices.UPS import UPS
+from os.path import exists
+import subprocess
+import datetime, os, time, signal
+
 logger = logging.getLogger(__name__)
 
 DEBUG = True
 
 
-def bosch_usb_drive_off():
-    pass
+def waitfor(command, timeout):
+    """call shell-command and either return its output or kill it
+    if it doesn't normally exit within timeout seconds and return None"""
+    start = datetime.datetime.now()
+    process = subprocess.Popen(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    while process.poll() is None:
+        time.sleep(0.2)
+        now = datetime.datetime.now()
+        if (now - start).seconds > timeout:
+            os.kill(process.pid, signal.SIGKILL)
+            os.waitpid(-1, os.WNOHANG)
+            return None
+    return process.stdout.readlines()
+
+
+def bosch_usb_drive_off(relay):
+    path = "/media/jlovell/GLM400CL"
+    if exists(path):
+        command = "umount {}".format(path)
+        waitfor(command, 15)
+        relay.off()
+    else:
+        return False
+
+
+def bosch_usb_drive_on(relay):
+    relay.on()
+    time.sleep(5)
+    path = "/media/jlovell/GLM400CL"
+    if not exists(path):
+        print("No drive drive found")
+        return False
+    else:
+        print("Drive mounted")
+        return True
 
 
 def wait_for_button():
@@ -31,10 +71,6 @@ def get_accelerometer_orientation():
 
 
 def show_orientation_data():
-    pass
-
-
-def bosch_usb_drive_on():
     pass
 
 
@@ -95,10 +131,9 @@ def main():
     ups = UPS(config)
     # GPS (skip for now)
 
-
     # --------------------------------------------------------------------------
     # Initialise data arrays
-    
+
     # --------------------------------------------------------------------------
     # Dismount Bosh USB drive and turn off 5V
     bosch_usb_drive_off()
@@ -133,6 +168,7 @@ def main():
             # button 3 pressed
             # Show status
             show_status()
-    
+
+
 if __name__ == "__main__":
     main()
