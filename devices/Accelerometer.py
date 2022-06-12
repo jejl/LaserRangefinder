@@ -15,11 +15,14 @@ class Accelerometer:
         self.norm = 0
         self.GetCalcReport()
 
-    def GetCalcReport(self):
+    def Update(self):
         self.getAccel()
         self.getMagnet()
         self.calcHeading()
         self.calcNormHeading()
+
+    def GetCalcReport(self):
+        self.Update()
         print(
             "Pitch: %.2f Roll: %.2f Heading: %.2f"
             % (

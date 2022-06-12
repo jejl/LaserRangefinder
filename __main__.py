@@ -58,20 +58,27 @@ def bosch_usb_drive_on(relay):
         return True
 
 
-def wait_for_button():
-    pass
+def wait_for_button(test: bool = False):
+    if test:
+        print("Test mode")
+        print("1: Measurement")
+        print("2: Finished measurement")
+        print("3: Status")
+        key = input("Enter key: ")
+
+def get_rotary(rotary):
+    rotary.getValue()
 
 
-def get_rotary():
-    pass
+def get_accelerometer_orientation(accelerometer):
+    accelerometer.Update()
 
 
-def get_accelerometer_orientation():
-    pass
-
-
-def show_orientation_data():
-    pass
+def show_orientation_data(rotary, accelerometer):
+    print("Rotary value = {} angle = {}".format(rotary.value, rotary.direction))
+    print("Accelerometer heading = {}".format(accelerometer.norm_heading))
+    print("Accelerometer pitch = {}".format(accelerometer.pitch))
+    print("Accelerometer roll = {}".format(accelerometer.roll))
 
 
 def check_for_usb_drive():
@@ -82,8 +89,26 @@ def mount_usb_drive():
     pass
 
 
-def get_bosch_data():
-    pass
+def get_bosch_data(debug=True):
+    import csv
+    with open('/media/jlovell/GLM400CL/Memory.txt') as inp:
+        reader = csv.DictReader(inp)
+        for row in reader:
+            if debug:
+                print(row)
+    # row contains dict of data
+    # Must be indirect height measurement to get range and angle
+    if not row['Function'] == 'Indirect Height Measurement':
+        print("Error: laser ranger should be configured for Indirect height measurement!")
+        return False
+    # Get range and angle
+    data = {}
+    data['time'] = row['Date']
+    data['range'] = float(row['Value1'])
+    data['angle'] = float(row['Value2'])
+    data['height'] = float(row['Measurement'])
+    data['image_no_str'] = row['Image No.']
+    return(data)
 
 
 def show_bosch_data():
@@ -142,11 +167,12 @@ def main():
     # Start the loop
     while True:
         # wait for a button press
-        key = wait_for_button()
+
+        key = wait_for_button(test=True)
         if key == 1:
             # button 1 pressed
             # Measurement
-            rotary_angle = get_rotary()
+            rotary_angle = get_rotary(rotary)
             accelerometer_orientation = get_accelerometer_orientation()
             # gps_data = get_GPS()
             # Show data on screen
