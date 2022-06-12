@@ -1,5 +1,5 @@
 import spidev as SPI
-import ST7789
+from screen.ST7789 import ST7789
 import time
 
 from PIL import Image,ImageDraw,ImageFont
@@ -16,7 +16,7 @@ class ScreenAndButtons:
     def __init__(self):
         """Open display and initialise. self.disp is the display object"""
         # 240x240 display with hardware SPI:
-        self.disp = ST7789.ST7789(SPI.SpiDev(bus, device), RST, DC, BL)
+        self.disp = ST7789(SPI.SpiDev(bus, device), RST, DC, BL)
 
         # Initialize library.
         self.disp.Init()

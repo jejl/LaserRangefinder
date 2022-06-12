@@ -209,8 +209,11 @@ class UPS:
         self.power_W = 0
         self.battery_percent = 0
         self.PSU_voltage = 0
+        #
+        self.get_ups_data()
 
     def get_ups_data(self):
+        ina219 = INA219(addr=0x43)
         self.load_voltage_V = ina219.getBusVoltage_V()  # voltage on V- (load side)
         self.shunt_voltage = (
                 ina219.getShuntVoltage_mV() / 1000

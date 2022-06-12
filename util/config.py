@@ -75,7 +75,7 @@ class Config:
         self.Encoder_GPIO_left_pin = 12
         self.Encoder_GPIO_right_pin = 23
         # UPS
-        self.ups_addr = 0x43
+        self.UPS_addr = 0x43
 
     def load(self, arg: Union[tuple, configargparse.Namespace]):
         """Puts configuration data from config files, command-line and env vars into variables

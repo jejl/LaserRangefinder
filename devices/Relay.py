@@ -28,9 +28,3 @@ def waitfor(command, timeout):
             return None
     return process.stdout.readlines()
 
-if __name__ == '__main__':
-  waitfor("""osascript -e 'mount volume "afp://office/photos"'""", 15)
-  waitfor("""osascript -e 'mount volume "smb://guest:guest@meo/shared"'""", 15)
-  sync_last(25, ['/Volumes/photos','/Volumes/shared'])
-  os.popen("""osascript -e 'tell application "Finder" to eject "Hotwired"'""")
-  os.popen("""osascript -e 'tell application "Finder" to eject "Shared"'""")

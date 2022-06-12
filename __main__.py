@@ -13,6 +13,7 @@ from devices.UPS import UPS
 from os.path import exists
 import subprocess
 import datetime, os, time, signal
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +52,10 @@ def bosch_usb_drive_on(relay):
     time.sleep(5)
     path = "/media/jlovell/GLM400CL"
     if not exists(path):
-        print("No drive drive found")
-        return False
+        print("No drive drive found wait 5 sec")
+        time.sleep(5)
+        if not exists(path):
+            return False
     else:
         print("Drive mounted")
         return True
@@ -64,7 +67,9 @@ def wait_for_button(test: bool = False):
         print("1: Measurement")
         print("2: Finished measurement")
         print("3: Status")
-        key = input("Enter key: ")
+        key = int(input("Enter key: "))
+        return key
+
 
 def get_rotary(rotary):
     rotary.getValue()
@@ -76,9 +81,9 @@ def get_accelerometer_orientation(accelerometer):
 
 def show_orientation_data(rotary, accelerometer):
     print("Rotary value = {} angle = {}".format(rotary.value, rotary.direction))
-    print("Accelerometer heading = {}".format(accelerometer.norm_heading))
-    print("Accelerometer pitch = {}".format(accelerometer.pitch))
-    print("Accelerometer roll = {}".format(accelerometer.roll))
+    print("Accelerometer heading = {}".format(np.rad2deg(accelerometer.norm_heading)))
+    print("Accelerometer pitch = {}".format(np.rad2deg(accelerometer.pitch)))
+    print("Accelerometer roll = {}".format(np.rad2deg(accelerometer.roll)))
 
 
 def check_for_usb_drive():
@@ -91,46 +96,73 @@ def mount_usb_drive():
 
 def get_bosch_data(debug=True):
     import csv
-    with open('/media/jlovell/GLM400CL/Memory.txt') as inp:
+
+    with open("/media/jlovell/GLM400CL/Memory.txt") as inp:
         reader = csv.DictReader(inp)
         for row in reader:
             if debug:
                 print(row)
     # row contains dict of data
     # Must be indirect height measurement to get range and angle
-    if not row['Function'] == 'Indirect Height Measurement':
-        print("Error: laser ranger should be configured for Indirect height measurement!")
+    if not row["Function"] == "Indirect Height Measurement":
+        print(
+            "Error: laser ranger should be configured for Indirect height measurement!"
+        )
         return False
     # Get range and angle
     data = {}
-    data['time'] = row['Date']
-    data['range'] = float(row['Value1'])
-    data['angle'] = float(row['Value2'])
-    data['height'] = float(row['Measurement'])
-    data['image_no_str'] = row['Image No.']
-    return(data)
+    data["time"] = row["Date"]
+    data["range"] = float(row["Value1"])
+    data["angle"] = float(row["Value2"])
+    data["height"] = float(row["Measurement"])
+    data["image_no_str"] = row["Image No."]
+    return data
 
 
-def show_bosch_data():
-    pass
+def show_bosch_data(bosch_data):
+    print("Bosch data")
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(bosch_data)
 
 
 def show_status():
+    print("Status")
     pass
+
+
+def write_data_to_json(config, rotary, accelerometer, bosch_data):
+    import json
+    from datetime import datetime
+
+    data = {}
+    data["time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    data["rotary"] = {"value": rotary.value, "direction": rotary.direction}
+    data["accelerometer"] = {
+        "heading": accelerometer.norm_heading,
+        "pitch": accelerometer.pitch,
+        "roll": accelerometer.roll,
+        "norm": accelerometer.norm,
+    }
+    data["bosch"] = bosch_data
+    with open("{}/laser_data.json".format(config.LogDir), "a") as out:
+        json.dump(data, out)
+        out.write("\n")
+    return
 
 
 def main():
     """Initialise and start the loop"""
     # Read command-line arguments, config from the config file and env variables
-    config_in = Args()
+    # config_in = Args()
     # --------------------------------------------------------------------------
     # Create a configuration instance and add the parameters from above
     # Config instance
     config = Config()
     # Load in the config
-    config.load(config_in)
+    # config.load(config_in)
     # check the config makes sense
-    config.check_config()
+    # config.check_config()
     # --------------------------------------------------------------------------
     # Set up logging
     level = logging.INFO
@@ -161,35 +193,42 @@ def main():
 
     # --------------------------------------------------------------------------
     # Dismount Bosh USB drive and turn off 5V
-    bosch_usb_drive_off()
+    bosch_usb_drive_off(relay)
 
     # --------------------------------------------------------------------------
     # Start the loop
     while True:
         # wait for a button press
 
+        # key = 1
         key = wait_for_button(test=True)
         if key == 1:
             # button 1 pressed
+            # Turn off 5V to Bosch
+            bosch_usb_drive_off(relay)
+            input("Take a measurement with the laser then press enter to continue")
             # Measurement
             rotary_angle = get_rotary(rotary)
-            accelerometer_orientation = get_accelerometer_orientation()
+            accelerometer_orientation = get_accelerometer_orientation(accelerometer)
             # gps_data = get_GPS()
             # Show data on screen
-            show_orientation_data()
+            show_orientation_data(rotary,accelerometer)
         elif key == 2:
             # button 2 pressed
             # Finished. Get data
             # Turn on 5V to Bosch
-            bosch_usb_drive_on()
+            bosch_usb_drive_on(relay)
             # Mount USB drive (or check that it is mounted)
-            if not check_for_usb_drive():
-                mount_usb_drive()
+            # if not check_for_usb_drive():
+            #     mount_usb_drive()
             # get data from drive
             bosch_data = get_bosch_data()
-            # show orientation and bosch data on screen
-            show_orientation_data()
-            show_bosch_data()
+            if (bosch_data):
+                # show orientation and bosch data on screen
+                show_orientation_data(rotary, accelerometer)
+                show_bosch_data(bosch_data)
+                # write data to a json file
+                write_data_to_json(config, rotary, accelerometer, bosch_data)
         else:
             # button 3 pressed
             # Show status
